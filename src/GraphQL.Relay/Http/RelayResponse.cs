@@ -16,6 +16,7 @@ namespace GraphQL.Relay.Http
 
     public bool HasErrors => Results.Any(r => r.Errors?.Count > 0);
 
+    /*
     public string Write()
     {
       return Writer.Write(IsBatched ?
@@ -23,5 +24,6 @@ namespace GraphQL.Relay.Http
           Results.FirstOrDefault()
       );
     }
+  */
   }
 }
