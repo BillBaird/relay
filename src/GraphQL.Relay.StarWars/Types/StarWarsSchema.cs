@@ -1,22 +1,24 @@
 using System;
+using GraphQL.Relay.StarWars.Api;
 using GraphQL.Types;
 
 namespace GraphQL.Relay.StarWars.Types
 {
-    public class StarWarsSchema: Schema
+    public class StarWarsSchema : Schema
     {
-        public StarWarsSchema(Func<Type, object> resolveType)
-            : base(type => (GraphType)resolveType(type))
+        public StarWarsSchema(IServiceProvider provider)
+            : base(provider)
         {
-            var obj = resolveType(typeof(StarWarsQuery));
-            Query = obj as StarWarsQuery;
+            Query = new StarWarsQuery((Swapi)provider.GetService(typeof(Swapi)));
 
+            /*
             RegisterType<FilmGraphType>();
             RegisterType<PeopleGraphType>();
             RegisterType<PlanetGraphType>();
             RegisterType<SpeciesGraphType>();
             RegisterType<StarshipGraphType>();
             RegisterType<VehicleGraphType>();
+        */
         }
     }
 }

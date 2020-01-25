@@ -1,0 +1,59 @@
+query q1{
+  people(first:8) {
+    pageInfo {
+      startCursor
+      endCursor
+      hasNextPage
+      hasPreviousPage
+    }
+    totalCount
+    items {
+      id
+      name
+    }
+    edges{
+      cursor
+      node{
+        name
+        id
+        starships{totalCount}
+      }
+    }
+  }
+}
+
+query q2{
+  people(after:"YXJyYXljb25uZWN0aW9uOjE=" first:2) {
+    pageInfo {
+      startCursor
+      endCursor
+      hasNextPage
+      hasPreviousPage
+    }
+    totalCount
+ #   items {
+ #     id
+ #     name
+ #   }
+    edges{
+      cursor
+      node{
+        name
+        id
+        starships{totalCount}
+      }
+    }
+  }
+}
+
+query s3{
+  species{
+    pageInfo {
+      startCursor
+      endCursor
+      hasNextPage
+      hasPreviousPage
+    }
+    totalCount
+  }
+}

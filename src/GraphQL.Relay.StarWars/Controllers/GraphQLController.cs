@@ -1,10 +1,11 @@
-﻿using System;
+﻿/*
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using DataLoader;
+//using DataLoader;
 using GraphQL.Conversion;
 using GraphQL.Relay.Http;
 using GraphQL.Relay.StarWars.Api;
@@ -50,3 +51,4 @@ namespace GraphQL.Relay.StarWars.Controllers
     }
   }
 }
+*/
