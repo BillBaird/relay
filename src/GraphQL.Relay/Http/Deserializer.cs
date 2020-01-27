@@ -50,7 +50,8 @@ namespace GraphQL.Relay.Http
 
             throw new Exception("Unrecognized request json. GraphQL queries requests should be a single object, or an array of objects");
         }
-
+        
+#pragma warning disable CS0618
         private static RelayRequest DeserializeFormData(Stream body)
         {
             var form = new MultipartFormDataParser(body);
@@ -73,5 +74,7 @@ namespace GraphQL.Relay.Http
 
             return req;
         }
+#pragma warning restore CS0618
+        
     }
 }
