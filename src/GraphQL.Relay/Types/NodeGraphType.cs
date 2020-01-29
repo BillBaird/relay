@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using GraphQL.Types;
 using GraphQL.Types.Relay;
 using Panic.StringUtils;
+using SBLabs.Protocols.EventStore;
 
 namespace GraphQL.Relay.Types
 {
@@ -27,15 +28,15 @@ namespace GraphQL.Relay.Types
 
         public static string ToGlobalId(string name, object id)
         {
-            return StringUtils.Base64Encode("{0}:{1}".ToFormat(name, id));
+            return "t:{0}:{1}".ToFormat(name, id).BookmarkEncode();
         }
 
         public static GlobalId FromGlobalId(string globalId)
         {
-            var parts = StringUtils.Base64Decode(globalId).Split(':');
+            var parts = globalId.BookmarkDecodeToString().Split(':');
             return new GlobalId {
-                Type = parts[0],
-                Id = string.Join(":", parts.Skip(count: 1)),
+                Type = parts[1],
+                Id = string.Join(":", parts.Skip(count: 2)),
             };
         }
     }
