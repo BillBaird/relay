@@ -16,6 +16,7 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\EventStore\EventStore.Common.GraphQL\EventStore.Common.GraphQL.csproj" />
     <ProjectReference Include="..\..\..\EventStore\EventStore.Common\EventStore.Common.csproj" />
   </ItemGroup>
 </Project>

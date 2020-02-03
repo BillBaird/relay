@@ -2,10 +2,13 @@
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using EventStore.Common.Persistence;
 using GraphQL.Types;
 using GraphQL.Types.Relay;
 using Panic.StringUtils;
 using SBLabs.Protocols.EventStore;
+using SBLabs.Protocols.EventStore.GraphQL;
+using SBLabs.Protocols.Utils;
 
 namespace GraphQL.Relay.Types
 {
@@ -26,14 +29,18 @@ namespace GraphQL.Relay.Types
             return type;
         }
 
-        public static string ToGlobalId(string name, object id)
+        public static string ToGlobalId(string name, object id, IdScope scope)
         {
-            return "t:{0}:{1}".ToFormat(name, id).BookmarkEncode();
+            return scope == IdScope.Global 
+                ? "t:{0}:{1}".ToFormat(name, id).BookmarkEncode() 
+                : id.ToString();
         }
 
         public static GlobalId FromGlobalId(string globalId)
         {
             var parts = globalId.BookmarkDecodeToString().Split(':');
+            if (parts.Length != 3)
+                throw new ArgumentException($"String Id value ({globalId}) is not a valid Global Id");
             return new GlobalId {
                 Type = parts[1],
                 Id = string.Join(":", parts.Skip(count: 2)),
@@ -85,18 +92,35 @@ namespace GraphQL.Relay.Types
                     name = StringUtils.ToCamelCase(Name + "Id");
                 }
 
-                Field(name, expression)
-                    .Description($"The Id of the {Name ?? "node"}")
-                    .FieldType.Metadata["RelayLocalIdField"] = true;
+                Field<NonNullGraphType<StringGraphType>>(
+                    name,
+                    description: $"The Id of the {Name ?? "node"}",
+                    arguments: new QueryArguments(
+                        new QueryArgument<IdFormatEnum>{Name = "format", Description = @"The optional format the Id should be returned in - UUID (the default), ORDINAL, HASH_ORDINAL, or HASH_64_ORDINAL", DefaultValue = IdFormat.UUID},
+                        new QueryArgument<IdTypeFormatEnum>{Name = "typeFormat", Description = @"Specifies if the reference should be type qualified, and if so in what form - TABLE_NAME, TYPE_NAME, or NONE (the default).", DefaultValue = IdTypeFormat.None}
+                    ),
+                    resolve: context =>
+                    {
+                        var format = context.GetArgument<IdFormat?>("format").Default<IdFormat>(IdFormat.UUID);
+                        var typeFormat = context.GetArgument<IdTypeFormat?>("typeFormat").Default<IdTypeFormat>(IdTypeFormat.None);
+                        return _IdRef.MakeIdStr(((IProvideContext)context.Source)._context, format, typeFormat);
+                    }) // VALUETYPE
+                    .Metadata["RelayLocalIdField"] = true;
             }
 
+            var idArg = new QueryArguments(
+                new QueryArgument<IdScopeEnum>{Name = "scope", Description = @"The optional scope the Id should be returned in - GLOBAL (the default which is suitable for the node query) or LOCAL", DefaultValue = IdScope.Global}
+            );
+            
             var field = Field(
                 name: "id",
-                description: $"The Global Id of the {Name ?? "node"}",
+                description: $"The Id of the {Name ?? "node"}, either in GLOBAL scope (the default) or as LOCAL scope.",
+                arguments: idArg,
                 type: typeof(NonNullGraphType<IdGraphType>),
                 resolve: context => Node.ToGlobalId(
                     context.ParentType.Name,
-                    expression.Compile()(context.Source)
+                    expression.Compile()(context.Source),
+                    context.GetArgument<IdScope?>("scope").Default<IdScope>(IdScope.Global)
                 )
             );
 
